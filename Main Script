@@ -1,0 +1,157 @@
+import speech_recognition as sr
+import os
+import shlex
+import webbrowser
+from datetime import datetime, timedelta
+
+# Function to speak the given text
+def say(text):
+    escaped_text = shlex.quote(text)
+    os.system(f"say -v Daniel {escaped_text}")
+
+# Function to play music on Spotify
+def play_spotify():
+    script = '''
+    tell application "Spotify"
+        activate
+        play
+    end tell
+    '''
+    os.system(f"osascript -e '{script}'")
+
+# Function to open applications
+def open_application(app_name):
+    applications = {
+        "mail": "Mail",
+        "calculator": "Calculator",
+        "excel": "Microsoft Excel",
+        "word": "Microsoft Word",
+        "powerpoint": "Microsoft PowerPoint",
+        "facetime": "FaceTime",
+        "calendar": "Calendar",
+        "notes": "Notes",
+        "quicktime player": "QuickTime Player"
+    }
+    app = applications.get(app_name.lower(), app_name)
+    script = f'''
+    tell application "{app}"
+        activate
+    end tell
+    '''
+    os.system(f"osascript -e '{script}'")
+
+# Function to search Google
+def google_search(query):
+    url = f"https://www.google.com/search?q={shlex.quote(query)}"
+    webbrowser.get("safari").open(url)
+    say(f"Searching for information on {query}.")
+
+# Function to open popular websites
+def open_website(site_name):
+    websites = {
+        "youtube": "https://www.youtube.com",
+        "facebook": "https://www.facebook.com",
+        "instagram": "https://www.instagram.com",
+        "linkedin": "https://www.linkedin.com",
+        "google": "https://www.google.com",
+        "wikipedia": "https://www.wikipedia.org"
+    }
+    url = websites.get(site_name.lower(), None)
+    if url:
+        webbrowser.get("safari").open(url)
+        say(f"Opening {site_name}.")
+    else:
+        say(f"I did not recognize the website {site_name}.")
+
+# Function to get the current date and time
+def get_datetime():
+    now = datetime.now()
+    return f"The current date and time is {now.strftime('%A, %d %B %Y, %H:%M')}."
+
+# Function to get directions using Apple Maps
+def get_directions(destination):
+    url = f"http://maps.apple.com/?daddr={shlex.quote(destination)}"
+    webbrowser.get("safari").open(url)
+    say(f"Getting directions to {destination}.")
+
+# Function to check new messages (placeholder for real logic)
+def check_messages():
+    return True
+
+# Function to get a sample message content (placeholder for real logic)
+def get_message_content():
+    return "You have a new message."
+
+# Function to handle voice recognition
+def takeCommand():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.adjust_for_ambient_noise(source)
+        audio = r.listen(source)
+
+    try:
+        print("Recognizing...")
+        text = r.recognize_google(audio)
+        print(f"User said: {text}\n")
+    except sr.UnknownValueError:
+        print("Sorry, I did not understand that.")
+        text = None
+    except sr.RequestError:
+        print("Could not request results; check your network connection.")
+        text = None
+
+    return text
+
+# Main program logic
+if __name__ == "__main__":
+    say("Hello, I am Alfred")
+
+    try:
+        while True:
+            text = takeCommand()
+            if text:
+                text_lower = text.lower()
+
+                if "hey alfred" in text_lower:
+                    say("Welcome! What are we doing today?")
+                
+                elif "open" in text_lower:
+                    app_or_site = text_lower.split("open")[-1].strip()
+                    if app_or_site in ["mail", "calculator", "excel", "word", "powerpoint", "facetime", "calendar", "notes"]:
+                        say(f"Opening {app_or_site.capitalize()}.")
+                        open_application(app_or_site)
+                    else:
+                        open_website(app_or_site)
+
+                elif "play music" in text_lower:
+                    say("Playing music on Spotify.")
+                    play_spotify()
+
+                elif "look up" in text_lower:
+                    query = text_lower.split("look up")[-1].strip()
+                    google_search(query)
+
+                elif "what's the date and time" in text_lower:
+                    date_time = get_datetime()
+                    say(date_time)
+
+                elif "get directions to" in text_lower:
+                    destination = text_lower.split("get directions to")[-1].strip()
+                    if destination:
+                        get_directions(destination)
+                    else:
+                        say("I did not catch the destination.")
+
+                elif "any new messages" in text_lower:
+                    if check_messages():
+                        message = get_message_content()
+                        say(message)
+                    else:
+                        say("You have no new messages.")
+                
+                else:
+                    say("Sorry, I did not understand that command.")
+
+    except KeyboardInterrupt:
+        print("Program terminated by user.")
