@@ -1,3 +1,4 @@
+
 # Alfred - Your Personal Assistant for Mac
 
 Alfred is a voice-activated assistant built on Python, designed for macOS, specifically tested on a MacBook M1 using PyCharm as the development environment. It listens for voice commands and performs tasks like opening applications, playing music, searching the web, checking the weather, scheduling events, and much more.
